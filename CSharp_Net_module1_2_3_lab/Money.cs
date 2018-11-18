@@ -9,7 +9,13 @@ namespace CSharp_Net_module1_2_3_lab
     // 1) declare enumeration CurrencyTypes, values UAH, USD, EU
     public enum CurrencyTypes
     {
-        UAN,USD,EU
+
+        // энумка на практике всегда дожна содеражть нулевым элемнтом какой нибудь Unknown или Unspecified или None
+        // потому что энумку можно парсить со строки
+        // и если не распарсили - 0, т.е. Unknown
+
+        //Unknown
+        UAN, USD,EU
     }
 
    public class Money
@@ -83,6 +89,7 @@ namespace CSharp_Net_module1_2_3_lab
         // 8) declare overloading of operator true and false to check CurrencyType of object
         public static bool operator true(Money money)
         {
+            //если мы учтем Uknown - тру если не 0
             return money.CurrencyType == CurrencyTypes.UAN;
         }
         public static bool operator false(Money money)
@@ -97,10 +104,28 @@ namespace CSharp_Net_module1_2_3_lab
 
         public static implicit operator string(Money money)
         {
-            return money.Amount.ToString();
+            //хорошо но я б еще учел валюту
+            //return money.Amount.ToString();
+
+            //https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/tokens/interpolated
+            //такой формат создания строки  - знак доллара и фигурные скобки - интерполяция
+            return $"{money.CurrencyType.ToString()} {money.Amount}";
         }
 
-
+        //и вайса верса
+        public static implicit operator Money(string value)
+        {
+            //мы это не рассматривали, но в задании оно есть
+            // Enum.Parse - механизм приведения строки к енумке: в метод передали тип и строку, на выходе получили object который привели к нужному типу
+            //string.Split() - получения массива стрингов по разделителю (пробел, запятая и т.п.)
+            //value.Split()[0] вернет нам значение до пробела
+            //value.Split()[1] вернет нам значение после пробела
+            string strCur = value.Split()[0];
+            CurrencyTypes currency = (CurrencyTypes)Enum.Parse(typeof(CurrencyTypes), strCur);
+            string strAmount = value.Split()[1];
+            decimal amount = decimal.Parse(strAmount);
+            return new Money(amount, currency);
+        }
 
     }
 }
